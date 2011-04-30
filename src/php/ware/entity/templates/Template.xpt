@@ -1,0 +1,19 @@
+«IMPORT php::ware::entity»
+
+«EXTENSION php::ware::entity::extensions::Extensions»
+
+«DEFINE main FOR Entity-»
+«FILE "README.md" toModelDir -»
+###Model For CodeIgniter Persistence
+
+This is an example of a generated file.
+For the persistence CodeIgniter cartridge
+«ENDFILE-»
+
+«FILE "README.impl.md" toModelImplDir -»
+###Model For CodeIgniter Persistence
+
+This is an example of a generated file.
+For the persistence CodeIgniter cartridge
+«ENDFILE-»
+«ENDDEFINE»

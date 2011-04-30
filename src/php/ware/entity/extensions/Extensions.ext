@@ -1,0 +1,5 @@
+import php::ware::entity;
+
+List[Entity] getAllEntities(DomainModel this) :
+    this.eContents().typeSelect(Entity)
+    ;
