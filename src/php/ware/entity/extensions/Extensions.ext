@@ -1,5 +1,19 @@
 import php::ware::entity;
+import php::ware::config;
 
-List[Entity] getAllEntities(DomainModel this) :
-    this.eContents().typeSelect(Entity)
+extension org::eclipse::xtend::util::stdlib::io;
+
+cached List[AbstractElement] getConfigModels(Entity this) :
+    ((List[ConfigModel])GLOBALVAR configModel).elements;
+
+cached ConfigDeclaration getConfigDeclaration(List[AbstractElement] this, String name) :
+    this.typeSelect(ConfigDeclaration).selectFirst(e|e.element == name)
+    ;
+
+cached List[Entity] getAllEntities(DomainModel this) :
+    this.elements.typeSelect(Entity)
+    ;
+
+cached String getBaseDirName() :
+    GLOBALVAR baseDirName
     ;
