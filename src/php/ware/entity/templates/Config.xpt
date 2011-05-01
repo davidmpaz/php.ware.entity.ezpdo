@@ -1,0 +1,15 @@
+«IMPORT php::ware::entity»
+«IMPORT php::ware::config»
+
+«EXTENSION php::ware::config::ext::Extensions»
+
+«DEFINE config FOR ConfigDeclaration»
+«FILE "config.ini" toModelDir -»
+;Generated file, do not modifiy by hand.
+
+«FOREACH this.properties AS p -»
+«p.propertyName» = «p.propertyValue»
+«ENDFOREACH»
+«ENDFILE»
+
+«ENDDEFINE»

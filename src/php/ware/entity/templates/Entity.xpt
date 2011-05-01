@@ -1,0 +1,653 @@
+«IMPORT php::ware::entity»
+«IMPORT php::ware::config»`
+
+«EXTENSION php::ware::entity::extensions::Extensions»
+«EXTENSION php::ware::entity::extensions::Entity»
+«EXTENSION org::eclipse::xtend::util::stdlib::io»
+
+«DEFINE bean FOR Entity-»
+
+«FILE this.name + "DaoBase.php" toModelDir -»
+<?php
+    «EXPAND Common::generatedFileComment("php::ware::entity::templates::Entity.xpt") FOR this»
+    «EXPAND daoBean FOR this»
+    «EXPAND daoBeanBase FOR this»
+    «EXPAND beanException FOR this»
+«ENDFILE»
+
+«FILE this.name + "Dao.php" toModelImplDir -»
+<?php
+    «EXPAND daoBeanImpl FOR this»
+«ENDFILE»
+
+«FILE getEntitiesDir() + "/" + getBaseDirName() + "/" + this.name + "Base.php" toModelDir -»
+<?php
+    «EXPAND beanBase FOR this»
+«ENDFILE»
+
+«FILE getEntitiesDir() + "/" + this.name + ".php" toModelImplDir -»
+<?php
+    «EXPAND beanImpl FOR this»
+«ENDFILE»
+
+«ENDDEFINE»
+
+«DEFINE daoBean FOR Entity -»
+    /**
+     * Contract definition for DAO classes
+     */
+    interface «getName()»Dao
+    {
+        /**
+         * Loads an instance of «getName()» from the persistent store.
+         * 
+         * @param int $«getName().toFirstLower()»Id
+         * @return «getName()» entity loaded from database
+         */
+        public function load($«getName().toFirstLower()»Id);
+
+        /**
+         * Loads an instance of «getName()» from the persistent store using 
+         * a criteria sample object or an array.
+         * @param $«getName()»|array the criteria object
+         * @return «getName()»|array of entities loaded from database
+         */
+        public function loadByCriteria($criteria);
+
+        /**
+         * Loads all entities of type «getName()».
+         *
+         * @return «getName()»|array the loaded entities.
+         */
+        public function loadAll();
+
+        /**
+         * Creates an empty instance of «getName()» and adds it to the persistent store.
+         *
+         * @return «getName()» the epObject wrapper of the entity created.
+         */
+        public function create();
+
+        /**
+         * Creates an instance of «getName()» from a dictionary or object of type «getName()» and 
+         * adds it to the persistent store.
+         * @param «getName()»|array $«getName().toLowerCase()» object of type «getName()» or dictionary containing all attributes pairs, name & values
+         * @return «getName()» the epObject wrapper of the entity created.
+         */
+        public function createFrom($«getName().toLowerCase()»);
+
+        /**
+         * Creates a new instances of «getName()»s and adds
+         * from the passed in <code>«getName().toLowerCase()»s</code> collection
+         *
+         * @param «getName()» $«getName().toLowerCase()»s the collection of «getName()» instances or with dictionaries, can be combined.
+         * @return «getName()»|array the created collection of epObject instances.
+         */
+        public function createAll($«getName().toLowerCase()»s);
+
+        /**
+         * <p>
+         * Creates a new <code>«getName()»</code>
+         * instance from <strong>all</strong> attributes and adds it to
+         * the persistent store.
+         * </p>
+         *
+         * @return «getName()»  the entity created.
+         */
+        public function createWith(«FOREACH getAllFeatures() AS p SEPARATOR ", " -»$«p.name.toFirstLower()» = null«ENDFOREACH»);
+
+        /**
+         * Updates the <code>«getName().toLowerCase()»</code> instance in the persistent store.
+         *
+         * @param «getName()»|array $«getName().toLowerCase()» epObject wrapper for entity to update or dictionary
+         * @return boolean Whether the entity was updated or not 
+         */ 
+        public function update($«getName().toLowerCase()»);
+
+        /**
+         * Updates all instances in <code>«getName().toLowerCase()»s</code> collection
+         * into the persistent store.
+         *
+         * @param array $«getName().toLowerCase()»s Collection of entities or dictionary to update, can be combined
+         */
+        public function updateAll($«getName().toLowerCase()»s);
+
+        /**
+         * Updates the <code>«getName()»</code> instance in the persistent store
+         * with the specified ID and the data paased
+         *
+         * @param int $«getName().toLowerCase()»Id Object Id of the entity to update
+         * @param «getName()»|array $«getName().toLowerCase()» Object representation or array of data to update
+         * @return boolean Whether the entity was updated or not
+         */
+        public function updateWith($«getName().toLowerCase()»Id, $«getName().toLowerCase()»);
+
+        /**
+         * Updates the <code>«getName()»</code> instance from the persistent store.
+         * Refreshing the in memory object with the store data
+         * 
+         * @param «getName()» Entity to refresh, in memory object fields are refreshed with ones in datastore
+         * @return boolean whether object was refreshed or not 
+         */
+        public function refresh($«getName().toLowerCase()»);
+
+        /**
+         * Removes the instance of «getName()» having the given
+         * <code>identifier</code> from the persistent store.
+         *
+         * @param int $«getName().toLowerCase()»Id Object Id of entity to delete in data store
+         * @return boolean Whether the entity object was deleted or not.
+         */
+        public function removeWith($«getName().toLowerCase()»Id);
+
+        /**
+         * Removes the instance of «getName()» from the persistent store.
+         * @param «getName()» $«getName().toLowerCase()» epObject entity to delete
+         * @return boolean Whether entity was deleted or not.
+         */
+        public function remove($«getName().toLowerCase()»);
+
+        /**
+         * Removes all entities in the given <code>«getName().toLowerCase()»s<code> collection.
+         * @param array $«getName().toLowerCase()»s Collection of entities to delete.
+         */
+        public function removeAll($«getName().toLowerCase()»s);
+
+    }
+
+«ENDDEFINE»
+
+«DEFINE daoBeanBase FOR Entity»
+    /**
+     * <p>
+     * Base DAO Class: is able to create, update, remove, load, and find
+     * objects of type <code>«getName()»</code>.
+     * </p>
+     *
+     */
+    abstract class «getName()»DaoBase implements «getName()»Dao
+    {
+
+        /**
+         * @see «getName()»Dao::load($id)
+         */
+        public function load($id)
+        {
+            try
+            {
+                if (! isset($id))
+                {
+                    throw new IllegalArgumentException("Method {«getName()»Dao.load} says: Parameter <id> can not be null.");
+                }
+                //get the persistence manager
+                $manager = Factory::getManagerInstance();
+                $result = $manager->find("from «getName()» as «getName().toUpperCase()» where «getName().toUpperCase()».oid = ?", $id);
+                if($result)
+                    return $result[0]; //Object Found.
+                else
+                    return $result; //Object Not Found.
+            }
+            catch(IllegalArgumentException $iae)
+            {
+                throw $iae;
+            }
+            catch(Exception $e)
+            {
+                throw new UnexpectedException($e->getMessage(), $e->getCode());
+            }
+            return null;
+        }
+
+        /**
+         * @see «getName()»Dao::loadAll()
+         */
+        public function loadAll()
+        {
+            try
+            {
+                // get the persistence manager
+                $manager = Factory::getManagerInstance();
+                $result = $manager->get('«getName()»');
+                return $result;
+            }
+            catch(Exception $e)
+            {
+                throw new UnexpectedException($e->getMessage(), $e->getCode());
+            }
+            return null;
+        }
+
+        /**
+         * @see «getName()»Dao::loadByCriteria($criteria)
+         */
+        public function loadByCriteria($entity)
+        {
+            try
+            {
+                if (! isset($entity))
+                {
+                    throw new IllegalArgumentException("Method {«getName()»Dao.loadByCriteria} says: Parameter <criteria> can not be null.");
+                }
+                // get the persistence manager
+                $manager = Factory::getManagerInstance();
+                $result = null;
+                if ( is_array($entity) )
+                {
+                    $result = $manager->find("from «getName()» as «getName().toUpperCase()» where «getName().toUpperCase()» = ? ", $entity);
+                }
+                else
+                {
+                    $criteria = $manager->create('«getName()»');
+                    foreach( array_keys(get_class_vars('«getName()»')) as $property)
+                    {
+                        $criteria->$property = $entity->$property;
+                    }
+                    $result = $manager->find($criteria);
+                }
+                return $result;
+            }
+            catch(IllegalArgumentException $iae)
+            {
+                throw $iae;
+            }
+            catch(Exception $e)
+            {
+                throw new UnexpectedException($e->getMessage(), $e->getCode());
+            }
+            return null;
+        }
+
+        /**
+         * @see «getName()»Dao::create()
+         */
+        public function create()
+        {
+            try
+            {
+                // get the persistence manager
+                $manager = Factory::getManagerInstance();
+                return $manager->create('«getName()»');
+            }
+            catch(Exception $e)
+            {
+                throw new UnexpectedException($e->getMessage(), $e->getCode());
+            }
+            return null;
+        }
+
+        /**
+         * @see «getName()»Dao::createFrom($entity)
+         */
+        public function createFrom($entity)
+        {
+            try
+            {
+                if (! isset($entity))
+                {
+                    throw new IllegalArgumentException("Method {«getName()»Dao.createFrom} says: Parameter <entity> can not be null.");
+                }
+                // get the persistence manager
+                $manager = Factory::getManagerInstance();
+                $result = $manager->create('«getName()»');
+                if( is_array($entity) )
+                {
+                    foreach( $entity as $propName => $propValue)
+                    {
+                        $result[$propName] = $propValue;
+                    }
+                }
+                else
+                    foreach( array_keys(get_class_vars('«getName()»')) as $property)
+                    {
+                        $result->$property = $entity->$property;
+                    }
+                $manager->commit($result);
+                return $result;
+            }
+            catch(IllegalArgumentException $iae)
+            {
+                throw $iae;
+            }
+            catch(Exception $e)
+            {
+                throw new UnexpectedException($e->getMessage(), $e->getCode());
+            }
+            return null;
+        }
+
+        /**
+         * @see «getName()»Dao::createAll($entities)
+         */
+        public function createAll($entities)
+        {
+            try
+            {
+                if (! isset($entities))
+                {
+                    throw new IllegalArgumentException("Method {«getName()»Dao.createAll} says: Parameter <entities> can not be null.");
+                }
+                // get the persistence manager
+                $manager = Factory::getManagerInstance();
+                $result_collection = array();
+                foreach ($entities as $entity)
+                {
+                    $result_collection[] = $this->createFrom($entity);
+                }
+                return $result_collection;
+            }
+            catch(IllegalArgumentException $iae)
+            {
+                throw $iae;
+            }
+            catch(Exception $e)
+            {
+                throw new UnexpectedException($e->getMessage(), $e->getCode());
+            }
+            return null;
+        }
+
+        /**
+         * @see «getName()»Dao::createWith(«FOREACH getAllFeatures() AS p SEPARATOR ", " -»$«name.toFirstLower()»«ENDFOREACH»)
+         */
+        public function createWith(«FOREACH getAllFeatures() AS p SEPARATOR ", " -»$«name.toFirstLower()» = null«ENDFOREACH»)
+        {
+            try
+            {
+                $entityArray = compact(             
+                «FOREACH getAllFeatures() AS f SEPARATOR ", " -»
+                '«f.name.toFirstLower()-»'
+                «ENDFOREACH-»
+                );
+                return $this->createFrom($entityArray);
+            }
+            catch(Exception $e)
+            {
+                throw new UnexpectedException($e->getMessage(), $e->getCode());
+            }
+            return null;
+        }
+
+        /**
+         * @see «getName()»Dao::update($entity)
+         */
+        public function update($entity)
+        {
+            try
+            {
+                if (! isset($entity))
+                {
+                    throw new IllegalArgumentException("Method {«getName()»Dao.update} says: Parameter <entity> can not be null.");
+                }
+                // get the persistence manager
+                $manager = Factory::getManagerInstance();
+                //force commit
+                $result = $manager->commit($entity, true);
+                if(! $result) throw new UnexpectedException(
+                    "Method [«getName()»Dao::update} says: Uncommitable entity object", -1);
+                return true;
+            }
+            catch(IllegalArgumentException $iae)
+            {
+                throw $iae;
+            }
+            catch(Exception $e)
+            {
+                throw new UnexpectedException($e->getMessage(), $e->getCode());
+            }
+            return null;
+        }
+
+        /**
+         * @see «getName()»Dao::updateAll($entities)
+         */
+        public function updateAll($entities)
+        {
+            try
+            {
+                if (! isset($entities))
+                {
+                    throw new IllegalArgumentException("Method {«getName()»Dao.updateAll} says: Parameter <entities> can not be null.");
+                }
+                // get the persistence manager
+                $manager = Factory::getManagerInstance();
+                foreach($entities as $entity)
+                {
+                    $updated = null;
+                    if( is_array($entity) )
+                    {
+                        $«getEntityIdName()» = $entity['«getEntityIdName()»'];
+                        unset($entity['«getEntityIdName()»']);
+                        $updated = $this->updateWith($«getEntityIdName()», $entity);
+                    }
+                    else $updated = $this->update($entity);
+                    
+                    if(! $updated) throw new UnexpectedException(
+                        "Method {«getName()»Dao.updateAll} says: Uncommitable entity object when updating collection.", -1
+                    );  
+                }
+            }
+            catch(IllegalArgumentException $iae)
+            {
+                throw $iae;
+            }
+            catch(Exception $e)
+            {
+                throw new UnexpectedException($e->getMessage(), $e->getCode());
+            }
+            return null;
+        }
+
+        /**
+         * @see «getName()»Dao::updateWith($id, $entity)
+         */
+        public function updateWith($id, $entity)
+        {
+            try
+            {
+                if (! isset($entity))
+                {
+                    throw new IllegalArgumentException("Method {«getName()»Dao.update} says: Parameter <entity> can not be null.");
+                }
+                $loadedEntity = $this->load($id);
+                if( $loadedEntity )
+                {
+                    if( is_array($entity) )
+                    {
+                        foreach( $entity as $propertyName => $propertyValue )
+                        {
+                            $loadedEntity->$propertyName = $propertyValue;
+                        }
+                    }
+                    else
+                    {
+                        foreach( array_keys(get_class_vars('«getName()»')) as $property)
+                        {
+                            $loadedEntity->$property = $entity->$property;
+                        }
+                    }
+                }
+                else throw new UnexpectedException(
+                    "Method {«getName()»Dao::updateWith} says: Entity object with <id> = $id, not found for updating", -1);
+                // get the persistence manager
+                $manager = Factory::getManagerInstance();
+                $result = $manager->commit($loadedEntity);
+                if(! $result)
+                    throw new UnexpectedException(
+                        "Method {«getName()»Dao::updateWith} says: Uncommitable entity object", -1);
+                return true;
+            }
+            catch(IllegalArgumentException $iae)
+            {
+                throw $iae;
+            }
+            catch(Exception $e)
+            {
+                throw new UnexpectedException($e->getMessage(), $e->getCode());
+            }
+            return null;
+        }
+
+        /**
+         * @see «getName()»Dao::refresh($entity)
+         */
+        public function refresh($entity)
+        {
+            try
+            {
+                if (! isset($entity))
+                {
+                    throw new IllegalArgumentException("Method {«getName()»Dao.refresh} says: Parameter <entity> can not be null.");
+                }
+                // get the persistence manager
+                $manager = Factory::getManagerInstance();
+                return $manager->refresh($entity);
+            }
+            catch(IllegalArgumentException $iae)
+            {
+                throw $iae;
+            }
+            catch(Exception $e)
+            {
+                throw new UnexpectedException($e->getMessage(), $e->getCode());
+            }
+            return null;
+        }
+
+        /**
+         * @see «getName()»Dao::removeWith($id)
+         */
+        public function removeWith($id)
+        {
+            try
+            {
+                if (! isset($id))
+                {
+                    throw new IllegalArgumentException("Method {«getName()»Dao.removeWith} says: Parameter <id> can not be null.");
+                }
+                // get the persistence manager
+                $manager = Factory::getManagerInstance();
+                $result = $manager->find("from «getName()» as «getName().toUpperCase()» where «getName().toUpperCase()».oid = ?", $id);
+                if( $result )               
+                    return $manager->delete($result[0]);
+                else
+                    return false;
+            }
+            catch(IllegalArgumentException $iae)
+            {
+                throw $iae;
+            }
+            catch(Exception $e)
+            {
+                throw new UnexpectedException($e->getMessage(), $e->getCode());
+            }
+            return null;
+        }
+
+        /**
+         * @see «getName()»Dao::remove($entity)
+         */
+        public function remove($entity)
+        {
+            try
+            {
+                if (! isset($entity))
+                {
+                    throw new IllegalArgumentException("Method {«getName()»Dao.remove} says: Parameter <entity> can not be null.");
+                }
+                // get the persistence manager
+                $manager = Factory::getManagerInstance();
+                return $manager->delete($entity);
+            }
+            catch(IllegalArgumentException $iae)
+            {
+                throw $iae;
+            }
+            catch(Exception $e)
+            {
+                throw new UnexpectedException($e->getMessage(), $e->getCode());
+            }
+            return null;
+        }
+
+        /**
+         * @see «getName()»Dao::removeAll($entities)
+         */
+        public function removeAll($entities)
+        {
+            try
+            {
+                if (! isset($entities))
+                {
+                    throw new IllegalArgumentException("Method {«getName()»Dao.removeAll} says: Parameter <entities> can not be null.");
+                }
+                // get the persistence manager
+                $manager = Factory::getManagerInstance();
+                $result = true;
+                foreach($entities as $entity)
+                {                   
+                    if(! $manager->delete($entity))
+                        $result = false; //something were wrong
+                }
+                return $result;
+            }
+            catch(IllegalArgumentException $iae)
+            {
+                throw $iae;
+            }
+            catch(Exception $e)
+            {
+                throw new UnexpectedException($e->getMessage(), $e->getCode());
+            }
+            return null;
+        }
+
+    }
+
+«ENDDEFINE»
+
+«DEFINE beanBase FOR Entity»
+
+    «IF this.isAbstract()»abstract «ENDIF»class «getName()»Base «IF this.hasSuperType()»extends «superType.getName()» «ENDIF»
+    {
+    }
+«ENDDEFINE»
+
+«DEFINE beanException FOR Entity»
+/**
+ * Exception for «getName()» entity
+ */
+class «getName()»Exception extends Exception{}
+«ENDDEFINE»
+
+
+«REM» *****************************************
+        Implementation File for entities  
+«ENDREM»
+
+«DEFINE daoBeanImpl FOR Entity-»
+    «EXPAND Common::handEditFileComment FOR this»
+    include_once(dirname(__FILE__)."/«getName()»DaoBase.php");
+
+    /**
+     *
+     */
+    class «getName()»Dao extends «IF isDirectIherited()»«getSuperType().getName()»Dao«ELSE»«getName()»DaoBase«ENDIF»
+    {
+        //Override here any behaviour from the dao base class
+        //Or just implement additional stuff
+
+    }
+«ENDDEFINE»
+
+«DEFINE beanImpl FOR Entity-»
+    «EXPAND Common::handEditFileComment FOR this»
+    include_once(dirname(__FILE__)."/«getBaseDirName()»/«getName()»Base.php");
+
+    /**
+     *
+     */
+    class «getName()» extends 
+    «IF isDirectIherited()»«getSuperType().getName()»«ELSE»«getName()»Base«ENDIF»
+    {
+    }
+«ENDDEFINE»

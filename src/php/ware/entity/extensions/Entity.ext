@@ -1,0 +1,108 @@
+import php::ware::entity;
+import php::ware::config;
+
+extension php::ware::entity::extensions::Extensions;
+
+/*
+ * Entity extensions
+ */
+
+String getName(Entity this):
+	this.name
+	;
+
+Entity getSuperType(Entity this):
+	this.superType
+	;
+
+//is Abstract
+Boolean isAbstract(Entity this):
+	this.isAbstract
+	;
+
+Boolean isDirectIherited(Entity this):
+	this.hasSuperType() && this.features.size == 0
+	;
+
+Boolean hasSuperType(Entity this) :
+	this.superType != null
+	;
+
+//Any operation marked as finder ?
+//Boolean hasFinders(Entity this):
+//getOperations().select(e|e.isFinder()).size > 0
+//;
+
+//Any operation marked as classifier ?
+//Boolean hasClassifier(Entity this):
+//getOperations().select(e|e.isClassifier()).size > 0
+//;
+
+//Get all operations marked as classifier
+//List[Method] getClassifiers(Entity this):
+//getOperations().select(e|e.isClassifier())
+//;
+
+//Get all operations marked as finder
+//List[Method] getFinders(Entity this):
+//getOperations().select(e|e.isFinder())
+//;
+
+List[StructuralFeature] getFeatures(Entity this):
+    this.features.typeSelect(StructuralFeature)
+    ;
+
+//List of features from an Entity
+List[StructuralFeature] getAllFeatures(Entity this) :
+	this.hasSuperType() ?
+		this.getFeatures().union(this.getSuperType().getAllFeatures()).flatten().toSet() :
+		getFeatures().flatten().toSet()
+	;
+
+//List of primitives features from an Entity
+List[StructuralFeature] getSimpleFeatures(Entity this) :
+    this.getAllFeatures().
+       typeSelect(Attribute).
+       select(e|e.type.referenced.metaType == DataType)
+    ;
+
+//List of complex features from an Entity
+List[StructuralFeature] getComplexFeatures(Entity this) :
+    this.getAllFeatures().intersect(this.getSimpleFeatures())
+    ;
+
+//If entity has only one attribute and it is primitive
+//Boolean hasUniqueEnumAttribute(Entity this) :
+//    this.getAllFeatures().size == 1 && this.getAllFeatures().get(0).type.metaType == PrimitiveType
+//    ;
+
+//Get all operations excluding finders and classifier
+//List[Operation] getEntityOperations(Entity this):
+//this.features.select(e | ! e.metaType == Operation)
+//;
+
+//List[Operation] getOperations(Entity this):
+//this.features.select(e | ! e.metaType == Operation)
+//;
+
+//List of features from an Entity
+//List[Method] getAllOperations(Entity this) :
+//this.hasSuperType() ?
+//getAllOperations(this.getSuperType()).union(this.getOperations()).flatten().toSet() :
+//getOperations().flatten().toSet()
+//;
+
+//Get the required config property "default_oid_column"
+String getEntityIdName(Entity this):
+    this.getConfigModels().getConfigDeclaration("ezpdo.persistence.options").
+        properties.select(e|e.propertyName == "default_oid_column").first().
+            propertyValue.toString()
+    ;
+
+//Get the required config property "source_dirs"
+String getEntitiesDir(Entity this):
+    this.getConfigModels().getConfigDeclaration("ezpdo.persistence.options").
+        properties.selectFirst(e|e.propertyName == "source_dirs").
+            propertyValue.toString()
+    ;   
+

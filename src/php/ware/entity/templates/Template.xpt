@@ -1,19 +1,11 @@
 «IMPORT php::ware::entity»
+«IMPORT php::ware::config»
 
 «EXTENSION php::ware::entity::extensions::Extensions»
+«EXTENSION org::eclipse::xtend::util::stdlib::io»
 
 «DEFINE main FOR Entity-»
-«FILE "README.md" toModelDir -»
-###Model For CodeIgniter Persistence
+    «EXPAND Entity::bean FOR this»
 
-This is an example of a generated file.
-For the persistence CodeIgniter cartridge
-«ENDFILE-»
-
-«FILE "README.impl.md" toModelImplDir -»
-###Model For CodeIgniter Persistence
-
-This is an example of a generated file.
-For the persistence CodeIgniter cartridge
-«ENDFILE-»
+    «EXPAND Config::config FOR getConfigModels().getConfigDeclaration("ezpdo.persistence.options")»
 «ENDDEFINE»
