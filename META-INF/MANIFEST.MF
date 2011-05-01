@@ -13,6 +13,7 @@ Require-Bundle: php.ware.entity,
  org.eclipse.xtext;visibility:=reexport,
  org.eclipse.emf.mwe2.launch;resolution:=optional,
  org.eclipse.emf.mwe.utils;visibility:=reexport,
- org.eclipse.xtend.typesystem.emf;visibility:=reexport
+ org.eclipse.xtend.typesystem.emf;visibility:=reexport,
+ org.eclipse.xtend.util.stdlib
 Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
