@@ -6,8 +6,21 @@ extension org::eclipse::xtend::util::stdlib::io;
 cached List[AbstractElement] getConfigModels(Entity this) :
     ((List[ConfigModel])GLOBALVAR configModel).elements;
 
+cached List[AbstractElement] getConfigModels(StructuralFeature this) :
+    ((List[ConfigModel])GLOBALVAR configModel).elements;
+
 cached ConfigDeclaration getConfigDeclaration(List[AbstractElement] this, String name) :
-    this.typeSelect(ConfigDeclaration).selectFirst(e|e.element == name)
+    this.typeSelect(ConfigDeclaration).selectFirst(e|e.element == name);
+
+cached AnnonateEntity getEntityAnnotation(List[AbstractElement] this, Entity ent) :
+    this.typeSelect(AnnonateEntity).selectFirst(e|e.element == ent && e.feature == null)
+    ;
+
+cached AnnonateEntity getFeatureAnnotation(
+    List[AbstractElement] this,
+    Entity ent,
+    StructuralFeature feat) :
+    this.typeSelect(AnnonateEntity).selectFirst(e|e.element == ent && e.feature == feat)
     ;
 
 cached List[Entity] getAllEntities(DomainModel this) :
@@ -16,4 +29,16 @@ cached List[Entity] getAllEntities(DomainModel this) :
 
 cached String getBaseDirName() :
     GLOBALVAR baseDirName
+    ;
+
+// if setup as global config or per entity dao basis
+// we generate factory objects
+cached Boolean generateFactory(Entity this) :
+    this.getConfigModels().getConfigDeclaration("ezpdo.configuration.options").properties
+        .selectFirst(e|e.propertyName == "generate_factory")
+        .propertyValue == "true"
+     ||
+    this.getConfigModels().getEntityAnnotation(this).properties
+        .selectFirst(e|e.propertyName == "generate_factory")
+        .propertyValue == "true"
     ;
