@@ -1,0 +1,32 @@
+«IMPORT php::ware::entity»
+«IMPORT php::ware::config»`
+
+«EXTENSION php::ware::entity::extensions::Extensions»
+«EXTENSION php::ware::entity::extensions::Field»
+«EXTENSION org::eclipse::xtend::util::stdlib::io»
+
+
+«DEFINE mapField FOR StructuralFeature-»
+        «IF isDataType()-»
+        /**
+         * @orm «getTypeName()-»«getFeatureAnnotation("orm")»
+         */
+        «ELSE-»
+        /**
+         * @orm «EXPAND composition FOR this-» «EXPAND multiplicity FOR this-» «getTypeName()» «IF isReference()»«EXPAND inverse FOR (Reference)this»«ENDIF»
+         */
+         «ENDIF-»
+         public $«name.toFirstLower()-»;
+«ENDDEFINE»
+
+«DEFINE multiplicity FOR StructuralFeature-»
+«IF isMany()»many«ELSE»one«ENDIF-»
+«ENDDEFINE»
+
+«DEFINE composition FOR StructuralFeature-»
+«IF isComposite()»composed_of«ELSE»has«ENDIF-»
+«ENDDEFINE»
+
+«DEFINE inverse FOR Reference-»
+inverse(«this.opposite.name»)
+«ENDDEFINE»

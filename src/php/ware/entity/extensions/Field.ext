@@ -1,0 +1,35 @@
+import php::ware::entity;
+import php::ware::config;
+
+extension php::ware::entity::extensions::Extensions;
+
+// is multiple multiplicity is defined
+Boolean isMany(StructuralFeature this) :
+    this.type.multi
+    ;
+
+// if composed of relation is defined
+Boolean isComposite(StructuralFeature this) :
+    this.type.comp
+    ;
+
+Boolean isReference(StructuralFeature this) :
+    // isDataType for explanation on this workaround
+    this.metaType.toString() == "php::ware::entity::impl::ReferenceImpl"
+    ;
+
+Boolean isDataType(StructuralFeature this) :
+    // for some reason any of this does not work
+    // this.type.referenced.metaType == DataType
+    // this.type.referenced.metaType.isInstance(DataType)
+    this.type.referenced.metaType.toString() == "php::ware::entity::impl::DataTypeImpl"
+    ;
+
+String getTypeName(StructuralFeature this) :
+    this.type.referenced.name
+    ;
+
+String getFeatureAnnotation(StructuralFeature this, String annotation) :
+    getConfigModels().getFeatureAnnotation((Entity)this.eContainer(), this)
+        .properties.selectFirst(e|e.propertyName == annotation).propertyValue
+    ;
