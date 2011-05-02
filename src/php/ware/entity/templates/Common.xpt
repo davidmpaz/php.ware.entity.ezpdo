@@ -1,9 +1,9 @@
 «IMPORT php::ware::entity»
 
 «DEFINE generatedFileComment(String templateName) FOR Entity»
-//Generated file by: «templateName», DO NOT modifiy by hand!!.
+    //Generated file by: «templateName», DO NOT modifiy by hand!!.
 «ENDDEFINE»
 
 «DEFINE handEditFileComment FOR Entity»
-//Imlementation file, you MUST modify this!
+    //Imlementation file, you MUST modify this!
 «ENDDEFINE»
