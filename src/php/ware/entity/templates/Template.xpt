@@ -7,5 +7,45 @@
 «DEFINE main FOR Entity-»
     «EXPAND Entity::bean FOR this»
 
+    «EXPAND factory FOR this»
     «EXPAND Config::config FOR getConfigModels().getConfigDeclaration("ezpdo.persistence.options")»
+«ENDDEFINE»
+
+«DEFINE factory FOR Entity»
+«FILE "epManagerFactory.php" toModelDir -»
+<?php
+    «EXPAND Common::generatedFileComment("php::ware::ezpdo::templates::Common.xpt") FOR this»
+
+    /**
+     * Factory class to get the manager instance
+     */
+    class epManagerFactory
+    {
+        /*
+         * EZPDO Manager Instance
+         */
+        private static $manager; 
+
+        /*
+         * Return the EZPDO manager instance
+         */
+        public static function getManagerInstance()
+        {
+            if (!isset(self::$manager))
+            {
+                try
+                {
+                    epLoadConfig(dirname(__FILE__)."/config.ini");
+                    self::$manager = epManager::instance();
+                }
+                catch(Exception $e)
+                {
+                    throw new Exception($e);
+                }
+            }
+            return self::$manager;
+        }
+    }
+«ENDFILE»
+
 «ENDDEFINE»
