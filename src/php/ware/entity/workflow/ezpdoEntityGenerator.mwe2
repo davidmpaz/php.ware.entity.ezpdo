@@ -43,7 +43,7 @@ Workflow {
         outlet = {
         name = "toModelDir"
             path = "${targetDir}/${rootDirName}/${rootModelDirName}"
-            overwrite = true
+            overwrite = false
         }
         outlet = {
             name = "toModelImplDir"
